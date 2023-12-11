@@ -3,6 +3,8 @@ plugins {
     id 'com.github.sherter.google-java-format' version '0.9'
     id 'idea'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
 }
 
 repositories {
@@ -81,7 +83,19 @@ sourceSets {
     }
 }
 
+jar {
+    manifest {
+        attributes "Main-Class": "hipstershop.AdService"
+    }
+    duplicatesStrategy = DuplicatesStrategy.WARN
+    from {
+       configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+
 startScripts.enabled = false
+
 
 // This to cache dependencies during Docker image building. First build will take time.
 // Subsequent build will be incremental.
@@ -97,8 +111,8 @@ task adService(type: CreateStartScripts) {
     applicationName = 'AdService'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = startScripts.classpath
-    defaultJvmOpts =
-             ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adservice,-cprof_service_version=1.0.0"]
+    // defaultJvmOpts =
+    //          ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adservice,-cprof_service_version=1.0.0"]
 }
 
 task adServiceClient(type: CreateStartScripts) {
@@ -106,8 +120,8 @@ task adServiceClient(type: CreateStartScripts) {
     applicationName = 'AdServiceClient'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = startScripts.classpath
-    defaultJvmOpts =
-             ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adserviceclient,-cprof_service_version=1.0.0"]
+    // defaultJvmOpts =
+    //          ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adserviceclient,-cprof_service_version=1.0.0"]
 }
 
 applicationDistribution.into('bin') {

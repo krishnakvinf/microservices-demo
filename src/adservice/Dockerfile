@@ -25,18 +25,19 @@ COPY . .
 RUN chmod +x gradlew
 RUN ./gradlew installDist
 
-FROM eclipse-temurin:21-jre-alpine@sha256:b5a1250bb72d804d49471207e2ebb574caffc13ac76f99618fb5ea06af621056
+RUN chmod a+x /app/build/install/hipstershop/lib/hipstershop-0.1.0-SNAPSHOT.jar
+#RUN chmod a+x /app/build/install/hipstershop/bin/AdService
 
-RUN apk add --no-cache ca-certificates
+#FROM eclipse-temurin:21-jre-alpine@sha256:b5a1250bb72d804d49471207e2ebb574caffc13ac76f99618fb5ea06af621056
+FROM cgr.dev/chainguard/jre
 
-# Download Stackdriver Profiler Java agent
-RUN mkdir -p /opt/cprof && \
-    wget -q -O- https://storage.googleapis.com/cloud-profiler/java/latest/profiler_java_agent_alpine.tar.gz \
-    | tar xzv -C /opt/cprof && \
-    rm -rf profiler_java_agent.tar.gz
+#RUN apk add --no-cache ca-certificates
 
-WORKDIR /app
-COPY --from=builder /app .
+#ENV DISABLE_PROFILER=1
+
+WORKDIR /home
+COPY --from=builder /app/build/install/hipstershop /home/.
 
 EXPOSE 9555
-ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
+#ENTRYPOINT ["/app/build/install/hipstershop/bin/AdService"]
+ENTRYPOINT ["java", "-jar", "/home/lib/hipstershop-0.1.0-SNAPSHOT.jar"]

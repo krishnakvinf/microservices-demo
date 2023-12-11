@@ -26,11 +26,21 @@ COPY . .
 ARG SKAFFOLD_GO_GCFLAGS
 RUN go build -gcflags="${SKAFFOLD_GO_GCFLAGS}" -o /go/bin/frontend .
 
-FROM alpine:3.18.4@sha256:eece025e432126ce23f223450a0326fbebde39cdf496a85d8c016293fc851978 as release
-RUN apk add --no-cache ca-certificates \
-    busybox-extras net-tools bind-tools
-WORKDIR /src
-COPY --from=builder /go/bin/frontend /src/server
+RUN chmod a+x /go/bin/frontend 
+
+# FROM alpine:3.18.4@sha256:eece025e432126ce23f223450a0326fbebde39cdf496a85d8c016293fc851978 as release
+# RUN apk add --no-cache ca-certificates \
+#     busybox-extras net-tools bind-tools
+# WORKDIR /src
+# COPY --from=builder /go/bin/frontend /src/server
+# COPY ./templates ./templates
+# COPY ./static ./static
+
+FROM cgr.dev/chainguard/glibc-dynamic
+
+WORKDIR /usr/bin/
+
+COPY --from=builder /go/bin/frontend /usr/bin/server
 COPY ./templates ./templates
 COPY ./static ./static
 
@@ -40,4 +50,5 @@ COPY ./static ./static
 ENV GOTRACEBACK=single
 
 EXPOSE 8080
-ENTRYPOINT ["/src/server"]
+# ENTRYPOINT ["/src/server"]
+CMD ["usr/bin/server"]
