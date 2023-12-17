@@ -3,17 +3,18 @@ plugins {
     id 'idea'
     id 'application'
     id 'java'
-    id 'io.quarkus' version '3.2.9.Final'
+    id 'org.springframework.boot' version '2.7.5'
+    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'com.google.protobuf' version '0.8.14'
 }
 
 repositories {
     mavenCentral()
     mavenLocal()
-    maven { url "https://maven.repository.redhat.com/ga" }
 }
 
-description = 'Ad Quarkus Service'
-group = "adquarkusservice"
+description = 'Ad Springboot Service'
+group = "adspringbootservice"
 version = "0.1.0-SNAPSHOT"
 
 def grpcVersion = "1.42.0"
@@ -35,14 +36,34 @@ dependencies {
     if (speed) {
         implementation fileTree(dir: offlineCompile, include: '*.jar')
     } else {
-        implementation enforcedPlatform("com.redhat.quarkus.platform:quarkus-bom:3.2.9.Final-redhat-00003"),
-                'io.quarkus:quarkus-grpc',
-                'io.quarkus:quarkus-arc',
+        implementation 'org.springframework.boot:spring-boot-starter',
+                'io.grpc:grpc-netty:1.50.2',
+                'io.grpc:grpc-protobuf:1.50.1',
+                'io.grpc:grpc-stub:1.50.1',
+                'net.devh:grpc-server-spring-boot-starter:2.13.1.RELEASE',
+                "com.google.api.grpc:proto-google-common-protos:2.29.0",
                 "javax.annotation:javax.annotation-api:1.3.2",
                 "org.apache.logging.log4j:log4j-core:2.22.0"
         runtimeOnly "com.fasterxml.jackson.core:jackson-core:${jacksonCoreVersion}",
                 "com.fasterxml.jackson.core:jackson-databind:${jacksonDatabindVersion}",
                 "io.netty:netty-tcnative-boringssl-static:2.0.62.Final"
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.10.1"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.25.0"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+        ofSourceSet('main')
     }
 }
 
@@ -72,26 +93,26 @@ task downloadRepos(type: Copy) {
     into offlineCompile
 }
 
-task adQuarkusServiceImpl(type: CreateStartScripts) {
-    mainClass.set('hipstershop.AdQuarkusServiceImpl')
-    applicationName = 'AdQuarkusServiceImpl'
+task adSpringbootServiceImpl(type: CreateStartScripts) {
+    mainClass.set('hipstershop.AdSpringbootServiceImpl')
+    applicationName = 'AdSpringbootServiceImpl'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = startScripts.classpath
     defaultJvmOpts =
-             ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adquarkusserviceimpl,-cprof_service_version=1.0.0"]
+             ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adspringbootserviceimpl,-cprof_service_version=1.0.0"]
 }
 
-task adQuarkusServiceClient(type: CreateStartScripts) {
-    mainClass.set('hipstershop.AdQuarkusServiceClient')
-    applicationName = 'AdQuarkusServiceClient'
+task adSpringbootServiceClient(type: CreateStartScripts) {
+    mainClass.set('hipstershop.AdSpringbootServiceClient')
+    applicationName = 'AdSpringbootServiceClient'
     outputDir = new File(project.buildDir, 'tmp')
     classpath = startScripts.classpath
     defaultJvmOpts =
-             ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adquarkusserviceclient,-cprof_service_version=1.0.0"]
+             ["-agentpath:/opt/cprof/profiler_java_agent.so=-cprof_service=adspringbootserviceclient,-cprof_service_version=1.0.0"]
 }
 
 applicationDistribution.into('bin') {
-    from(adQuarkusServiceImpl)
-    from(adQuarkusServiceClient)
+    from(adSpringbootServiceImpl)
+    from(adSpringbootServiceClient)
     fileMode = 0755
 }
