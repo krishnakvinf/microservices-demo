@@ -15,11 +15,11 @@ spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       securityContext: {} 
-        #      securityContext:
-        #fsGroup: 1001180001
-        #runAsGroup: 1001180001
-        #runAsNonRoot: true
-        #runAsUser: 1001180001
+      # securityContext:
+      #   fsGroup: 1000
+      #   runAsGroup: 1000
+      #   runAsNonRoot: true
+      #   runAsUser: 1000
       containers:
       - name: server
         securityContext:
@@ -29,7 +29,8 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: docker.io/krishnakvinf/adservice:v0.8.0
+        # image: gcr.io/google-samples/microservices-demo/adservice:v0.8.0
+        image: CUSTOM_IMAGE_NAME_AND_TAG_HERE
         ports:
         - containerPort: 9555
         env:
